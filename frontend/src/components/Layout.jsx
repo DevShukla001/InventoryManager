@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import ApiBanner from "./ApiBanner";
 import CosmicBackground from "./CosmicBackground";
 
 const navItems = [
@@ -75,7 +76,10 @@ export default function Layout({ children, toast }) {
         </nav>
       </aside>
 
-      <main className="main-content">{children}</main>
+      <main className="main-content">
+        <ApiBanner />
+        {children}
+      </main>
 
       <nav className="bottom-nav" aria-label="Mobile navigation">
         {navItems.map((item) => (

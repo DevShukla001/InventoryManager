@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
+import PageActions from "../components/PageActions";
 import { api } from "../api";
 import { useApp } from "../context/AppContext";
 
@@ -21,6 +23,7 @@ export default function ProductsPage() {
   const { run, loading } = useApp();
   const [products, setProducts] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [viewProduct, setViewProduct] = useState(null);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyProduct);
   const [errors, setErrors] = useState({});
@@ -67,10 +70,7 @@ export default function ProductsPage() {
     };
     try {
       if (editing) {
-        await run(
-          () => api.updateProduct(editing.id, payload),
-          "Product updated"
-        );
+        await run(() => api.updateProduct(editing.id, payload), "Product updated");
       } else {
         await run(() => api.createProduct(payload), "Product created");
       }
@@ -92,60 +92,165 @@ export default function ProductsPage() {
   }
 
   return (
-    <div>
+    <div className="page">
       <header className="page-header">
         <h1 className="cosmic-title">Products</h1>
         <p>Manage catalog and inventory levels</p>
       </header>
 
-      <div className="toolbar">
-        <span>{products.length} product(s)</span>
-        <button type="button" className="btn btn-primary" onClick={openCreate}>
-          Add Product
-        </button>
-      </div>
+      <PageActions
+        count={products.length}
+        countLabel="product(s)"
+        primaryLabel="+ Add Product"
+        onPrimary={openCreate}
+      />
 
-      <div className="card card-glow table-wrap">
+      <button type="button" className="fab" onClick={openCreate} aria-label="Add product">
+        +
+      </button>
+
+      <div className="card card-glow">
         {products.length === 0 ? (
-          <p className="empty-state">No products yet. Add your first product.</p>
+          <EmptyState
+            message="No products yet."
+            actionLabel="Add your first product"
+            onAction={openCreate}
+          />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>SKU</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="mobile-list">
               {products.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.name}</td>
-                  <td>{p.sku}</td>
-                  <td>${Number(p.price).toFixed(2)}</td>
-                  <td>
+                <article key={p.id} className="list-card">
+                  <div className="list-card-head">
+                    <strong>{p.name}</strong>
                     <span
                       className={`badge ${p.quantity_in_stock <= 10 ? "badge-warning" : "badge-ok"}`}
                     >
-                      {p.quantity_in_stock}
+                      {p.quantity_in_stock} in stock
                     </span>
-                  </td>
-                  <td className="actions">
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => openEdit(p)}>
+                  </div>
+                  <p className="list-card-meta">
+                    SKU: {p.sku} · ${Number(p.price).toFixed(2)}
+                  </p>
+                  <div className="list-card-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setViewProduct(p)}
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => openEdit(p)}
+                    >
                       Edit
                     </button>
-                    <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)}>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(p.id)}
+                    >
                       Delete
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            <div className="desktop-table table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>SKU</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((p) => (
+                    <tr key={p.id}>
+                      <td>{p.name}</td>
+                      <td>{p.sku}</td>
+                      <td>${Number(p.price).toFixed(2)}</td>
+                      <td>
+                        <span
+                          className={`badge ${p.quantity_in_stock <= 10 ? "badge-warning" : "badge-ok"}`}
+                        >
+                          {p.quantity_in_stock}
+                        </span>
+                      </td>
+                      <td className="actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setViewProduct(p)}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => openEdit(p)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(p.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
+
+      {viewProduct && (
+        <Modal title="Product details" onClose={() => setViewProduct(null)}>
+          <div className="view-details">
+            <p>
+              <strong>ID:</strong> {viewProduct.id}
+            </p>
+            <p>
+              <strong>Name:</strong> {viewProduct.name}
+            </p>
+            <p>
+              <strong>SKU:</strong> {viewProduct.sku}
+            </p>
+            <p>
+              <strong>Price:</strong> ${Number(viewProduct.price).toFixed(2)}
+            </p>
+            <p>
+              <strong>Stock:</strong> {viewProduct.quantity_in_stock}
+            </p>
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setViewProduct(null)}>
+              Close
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => {
+                setViewProduct(null);
+                openEdit(viewProduct);
+              }}
+            >
+              Edit
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {modalOpen && (
         <Modal title={editing ? "Edit Product" : "Add Product"} onClose={() => setModalOpen(false)}>

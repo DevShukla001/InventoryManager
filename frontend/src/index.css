@@ -233,6 +233,12 @@ button {
   max-width: 1100px;
   width: 100%;
   min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.page {
+  width: 100%;
 }
 
 .bottom-nav {
@@ -481,6 +487,138 @@ tr:last-child td {
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+/* —— Sticky action bar (Add / Create always visible) —— */
+.page-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: rgba(12, 14, 36, 0.92);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 0 20px rgba(124, 92, 255, 0.12);
+  position: sticky;
+  top: 0.5rem;
+  z-index: 30;
+}
+
+.page-actions-count {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.btn-action-main {
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  box-shadow: 0 0 16px var(--glow);
+}
+
+/* Floating add button (mobile) */
+.fab {
+  display: none;
+  position: fixed;
+  right: 1rem;
+  bottom: calc(var(--bottom-nav-height) + 1rem + var(--safe-bottom));
+  z-index: 45;
+  width: 56px;
+  height: 56px;
+  min-height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  background: linear-gradient(135deg, var(--accent), #5a3fd4);
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1;
+  box-shadow: 0 6px 28px var(--glow), 0 0 24px var(--glow-cyan);
+}
+
+.fab:hover {
+  transform: scale(1.05);
+}
+
+/* API offline banner */
+.api-banner {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  background: rgba(127, 29, 29, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.api-banner code {
+  color: var(--accent-2);
+  font-size: 0.85em;
+}
+
+/* Mobile card list vs desktop table */
+.mobile-list {
+  display: none;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.desktop-table {
+  display: block;
+}
+
+.list-card {
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.list-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.list-card-meta {
+  margin: 0.2rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.list-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.list-card-actions .btn {
+  flex: 1;
+  min-width: 5rem;
+}
+
+.empty-state-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.view-details p {
+  margin: 0.5rem 0;
+  color: var(--text);
+}
+
+.view-details strong {
+  color: var(--accent-2);
+  margin-right: 0.35rem;
 }
 
 .modal-backdrop {
@@ -743,7 +881,27 @@ tr:last-child td {
 
   .main-content {
     padding: 1rem;
-    padding-bottom: 0.5rem;
+    padding-bottom: calc(var(--bottom-nav-height) + 4.5rem + var(--safe-bottom));
+  }
+
+  .page-actions-bar {
+    position: sticky;
+    top: 0.25rem;
+    z-index: 30;
+  }
+
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-list {
+    display: flex;
+  }
+
+  .desktop-table {
+    display: none;
   }
 
   .bottom-nav {
@@ -802,12 +960,12 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  .toolbar {
+  .page-actions-bar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .toolbar .btn-primary {
+  .btn-action-main {
     width: 100%;
   }
 
@@ -836,6 +994,14 @@ tr:last-child td {
 }
 
 @media (min-width: 901px) {
+  .fab {
+    display: none !important;
+  }
+
+  .page-actions-bar {
+    top: 0.75rem;
+  }
+
   .modal-backdrop {
     align-items: center;
     padding: 1rem;

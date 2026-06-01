@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
+import PageActions from "../components/PageActions";
 import { api } from "../api";
 import { useApp } from "../context/AppContext";
 
@@ -90,48 +92,53 @@ export default function OrdersPage() {
     }
   }
 
+  function openCreate() {
+    setCreateOpen(true);
+  }
+
   return (
-    <div>
+    <div className="page">
       <header className="page-header">
         <h1 className="cosmic-title">Orders</h1>
         <p>Create and track customer orders</p>
       </header>
 
-      <div className="toolbar">
-        <span>{orders.length} order(s)</span>
-        <button type="button" className="btn btn-primary" onClick={() => setCreateOpen(true)}>
-          Create Order
-        </button>
-      </div>
+      <PageActions
+        count={orders.length}
+        countLabel="order(s)"
+        primaryLabel="+ Create Order"
+        onPrimary={openCreate}
+      />
 
-      <div className="card card-glow table-wrap">
+      <button type="button" className="fab" onClick={openCreate} aria-label="Create order">
+        +
+      </button>
+
+      <div className="card card-glow">
         {orders.length === 0 ? (
-          <p className="empty-state">No orders yet.</p>
+          <EmptyState
+            message="No orders yet. Add products and customers first, then create an order."
+            actionLabel="Create order"
+            onAction={openCreate}
+          />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Total</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="mobile-list">
               {orders.map((o) => (
-                <tr key={o.id}>
-                  <td>#{o.id}</td>
-                  <td>{o.customer_name}</td>
-                  <td>${Number(o.total_amount).toFixed(2)}</td>
-                  <td>{new Date(o.created_at).toLocaleString()}</td>
-                  <td className="actions">
+                <article key={o.id} className="list-card">
+                  <div className="list-card-head">
+                    <strong>Order #{o.id}</strong>
+                    <span className="badge badge-ok">${Number(o.total_amount).toFixed(2)}</span>
+                  </div>
+                  <p className="list-card-meta">{o.customer_name}</p>
+                  <p className="list-card-meta">{new Date(o.created_at).toLocaleString()}</p>
+                  <div className="list-card-actions">
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => setDetailOrder(o)}
                     >
-                      Details
+                      View details
                     </button>
                     <button
                       type="button"
@@ -140,11 +147,51 @@ export default function OrdersPage() {
                     >
                       Cancel
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            <div className="desktop-table table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((o) => (
+                    <tr key={o.id}>
+                      <td>#{o.id}</td>
+                      <td>{o.customer_name}</td>
+                      <td>${Number(o.total_amount).toFixed(2)}</td>
+                      <td>{new Date(o.created_at).toLocaleString()}</td>
+                      <td className="actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setDetailOrder(o)}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleCancel(o.id)}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

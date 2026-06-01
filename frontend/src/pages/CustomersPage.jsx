@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import EmptyState from "../components/EmptyState";
 import Modal from "../components/Modal";
+import PageActions from "../components/PageActions";
 import { api } from "../api";
 import { useApp } from "../context/AppContext";
 
@@ -19,6 +21,7 @@ export default function CustomersPage() {
   const { run, loading } = useApp();
   const [customers, setCustomers] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [viewCustomer, setViewCustomer] = useState(null);
   const [form, setForm] = useState(emptyCustomer);
   const [errors, setErrors] = useState({});
 
@@ -29,6 +32,12 @@ export default function CustomersPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  function openCreate() {
+    setForm(emptyCustomer);
+    setErrors({});
+    setModalOpen(true);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -66,47 +75,49 @@ export default function CustomersPage() {
   }
 
   return (
-    <div>
+    <div className="page">
       <header className="page-header">
         <h1 className="cosmic-title">Customers</h1>
         <p>Manage customer records</p>
       </header>
 
-      <div className="toolbar">
-        <span>{customers.length} customer(s)</span>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
-            setForm(emptyCustomer);
-            setErrors({});
-            setModalOpen(true);
-          }}
-        >
-          Add Customer
-        </button>
-      </div>
+      <PageActions
+        count={customers.length}
+        countLabel="customer(s)"
+        primaryLabel="+ Add Customer"
+        onPrimary={openCreate}
+      />
 
-      <div className="card card-glow table-wrap">
+      <button type="button" className="fab" onClick={openCreate} aria-label="Add customer">
+        +
+      </button>
+
+      <div className="card card-glow">
         {customers.length === 0 ? (
-          <p className="empty-state">No customers yet.</p>
+          <EmptyState
+            message="No customers yet."
+            actionLabel="Add your first customer"
+            onAction={openCreate}
+          />
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="mobile-list">
               {customers.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.full_name}</td>
-                  <td>{c.email}</td>
-                  <td>{c.phone_number}</td>
-                  <td>
+                <article key={c.id} className="list-card">
+                  <div className="list-card-head">
+                    <strong>{c.full_name}</strong>
+                    <span className="badge badge-ok">#{c.id}</span>
+                  </div>
+                  <p className="list-card-meta">{c.email}</p>
+                  <p className="list-card-meta">{c.phone_number}</p>
+                  <div className="list-card-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setViewCustomer(c)}
+                    >
+                      View
+                    </button>
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
@@ -114,13 +125,75 @@ export default function CustomersPage() {
                     >
                       Delete
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            <div className="desktop-table table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {customers.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.full_name}</td>
+                      <td>{c.email}</td>
+                      <td>{c.phone_number}</td>
+                      <td className="actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setViewCustomer(c)}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(c.id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
+
+      {viewCustomer && (
+        <Modal title="Customer details" onClose={() => setViewCustomer(null)}>
+          <div className="view-details">
+            <p>
+              <strong>ID:</strong> {viewCustomer.id}
+            </p>
+            <p>
+              <strong>Name:</strong> {viewCustomer.full_name}
+            </p>
+            <p>
+              <strong>Email:</strong> {viewCustomer.email}
+            </p>
+            <p>
+              <strong>Phone:</strong> {viewCustomer.phone_number}
+            </p>
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setViewCustomer(null)}>
+              Close
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {modalOpen && (
         <Modal title="Add Customer" onClose={() => setModalOpen(false)}>
