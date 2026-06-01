@@ -1,5 +1,7 @@
+import { Eye, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import EmptyState from "../components/EmptyState";
+import IdBadge from "../components/IdBadge";
 import Modal from "../components/Modal";
 import PageActions from "../components/PageActions";
 import { api } from "../api";
@@ -77,22 +79,22 @@ export default function CustomersPage() {
   return (
     <div className="page">
       <header className="page-header">
-        <h1 className="cosmic-title">Customers</h1>
-        <p>Manage customer records</p>
+        <h1>Customers</h1>
+        <p>Each customer gets an auto-generated Customer ID for lookup in Query</p>
       </header>
 
       <PageActions
         count={customers.length}
         countLabel="customer(s)"
-        primaryLabel="+ Add Customer"
+        primaryLabel="Add Customer"
         onPrimary={openCreate}
       />
 
       <button type="button" className="fab" onClick={openCreate} aria-label="Add customer">
-        +
+        <Plus size={24} />
       </button>
 
-      <div className="card card-glow">
+      <div className="card">
         {customers.length === 0 ? (
           <EmptyState
             message="No customers yet."
@@ -105,8 +107,10 @@ export default function CustomersPage() {
               {customers.map((c) => (
                 <article key={c.id} className="list-card">
                   <div className="list-card-head">
-                    <strong>{c.full_name}</strong>
-                    <span className="badge badge-ok">#{c.id}</span>
+                    <div>
+                      <IdBadge label="Customer ID" id={c.id} />
+                      <strong style={{ display: "block", marginTop: "0.5rem" }}>{c.full_name}</strong>
+                    </div>
                   </div>
                   <p className="list-card-meta">{c.email}</p>
                   <p className="list-card-meta">{c.phone_number}</p>
@@ -116,14 +120,14 @@ export default function CustomersPage() {
                       className="btn btn-secondary btn-sm"
                       onClick={() => setViewCustomer(c)}
                     >
-                      View
+                      <Eye size={14} /> View
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(c.id)}
                     >
-                      Delete
+                      <Trash2 size={14} /> Delete
                     </button>
                   </div>
                 </article>
@@ -134,6 +138,7 @@ export default function CustomersPage() {
               <table>
                 <thead>
                   <tr>
+                    <th>Customer ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -143,6 +148,9 @@ export default function CustomersPage() {
                 <tbody>
                   {customers.map((c) => (
                     <tr key={c.id}>
+                      <td>
+                        <IdBadge label="ID" id={c.id} />
+                      </td>
                       <td>{c.full_name}</td>
                       <td>{c.email}</td>
                       <td>{c.phone_number}</td>
@@ -152,14 +160,14 @@ export default function CustomersPage() {
                           className="btn btn-secondary btn-sm"
                           onClick={() => setViewCustomer(c)}
                         >
-                          View
+                          <Eye size={14} /> View
                         </button>
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
                           onClick={() => handleDelete(c.id)}
                         >
-                          Delete
+                          <Trash2 size={14} /> Delete
                         </button>
                       </td>
                     </tr>
@@ -175,7 +183,7 @@ export default function CustomersPage() {
         <Modal title="Customer details" onClose={() => setViewCustomer(null)}>
           <div className="view-details">
             <p>
-              <strong>ID:</strong> {viewCustomer.id}
+              <strong>Customer ID:</strong> {viewCustomer.id}
             </p>
             <p>
               <strong>Name:</strong> {viewCustomer.full_name}

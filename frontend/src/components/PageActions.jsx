@@ -1,3 +1,5 @@
+import { Plus } from "lucide-react";
+
 export default function PageActions({ count, countLabel, primaryLabel, onPrimary }) {
   return (
     <div className="page-actions-bar">
@@ -5,6 +7,7 @@ export default function PageActions({ count, countLabel, primaryLabel, onPrimary
         {count} {countLabel}
       </span>
       <button type="button" className="btn btn-primary btn-action-main" onClick={onPrimary}>
+        <Plus size={18} strokeWidth={2.5} />
         {primaryLabel}
       </button>
     </div>

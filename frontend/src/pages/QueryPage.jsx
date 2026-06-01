@@ -1,10 +1,30 @@
+import { Search } from "lucide-react";
 import { useState } from "react";
 import { api } from "../api";
+import IdBadge from "../components/IdBadge";
 
 const ENTITY_OPTIONS = [
-  { value: "product", label: "Product" },
-  { value: "customer", label: "Customer" },
-  { value: "order", label: "Order" },
+  {
+    value: "product",
+    label: "Product",
+    idLabel: "Product ID",
+    placeholder: "Enter product ID (e.g. 1)",
+    hint: "Each product receives an auto-generated numeric ID when created.",
+  },
+  {
+    value: "customer",
+    label: "Customer",
+    idLabel: "Customer ID",
+    placeholder: "Enter customer ID (e.g. 1)",
+    hint: "Each customer receives an auto-generated numeric ID when created.",
+  },
+  {
+    value: "order",
+    label: "Order",
+    idLabel: "Order ID",
+    placeholder: "Enter order ID (e.g. 1)",
+    hint: "Each order receives an auto-generated numeric ID when placed.",
+  },
 ];
 
 function DetailRow({ label, value }) {
@@ -19,7 +39,7 @@ function DetailRow({ label, value }) {
 function ProductResult({ data }) {
   return (
     <div className="query-result-grid">
-      <DetailRow label="ID" value={data.id} />
+      <DetailRow label="Product ID" value={data.id} />
       <DetailRow label="Name" value={data.name} />
       <DetailRow label="SKU" value={data.sku} />
       <DetailRow label="Price" value={`$${Number(data.price).toFixed(2)}`} />
@@ -31,7 +51,7 @@ function ProductResult({ data }) {
 function CustomerResult({ data }) {
   return (
     <div className="query-result-grid">
-      <DetailRow label="ID" value={data.id} />
+      <DetailRow label="Customer ID" value={data.id} />
       <DetailRow label="Full Name" value={data.full_name} />
       <DetailRow label="Email" value={data.email} />
       <DetailRow label="Phone" value={data.phone_number} />
@@ -43,17 +63,18 @@ function OrderResult({ data }) {
   return (
     <>
       <div className="query-result-grid">
-        <DetailRow label="Order ID" value={`#${data.id}`} />
-        <DetailRow label="Customer" value={data.customer_name} />
+        <DetailRow label="Order ID" value={data.id} />
         <DetailRow label="Customer ID" value={data.customer_id} />
+        <DetailRow label="Customer" value={data.customer_name} />
         <DetailRow label="Total" value={`$${Number(data.total_amount).toFixed(2)}`} />
         <DetailRow label="Placed" value={new Date(data.created_at).toLocaleString()} />
       </div>
       {data.items?.length > 0 && (
-        <div className="table-wrap" style={{ marginTop: "1rem" }}>
+        <div className="table-wrap query-items-table">
           <table>
             <thead>
               <tr>
+                <th>Product ID</th>
                 <th>Product</th>
                 <th>Qty</th>
                 <th>Unit</th>
@@ -63,6 +84,9 @@ function OrderResult({ data }) {
             <tbody>
               {data.items.map((item) => (
                 <tr key={item.id}>
+                  <td>
+                    <IdBadge label="ID" id={item.product_id} />
+                  </td>
                   <td>{item.product_name}</td>
                   <td>{item.quantity}</td>
                   <td>${Number(item.unit_price).toFixed(2)}</td>
@@ -84,6 +108,8 @@ export default function QueryPage() {
   const [error, setError] = useState("");
   const [searching, setSearching] = useState(false);
 
+  const selected = ENTITY_OPTIONS.find((o) => o.value === entity) || ENTITY_OPTIONS[0];
+
   async function handleSearch(e) {
     e.preventDefault();
     setError("");
@@ -91,7 +117,7 @@ export default function QueryPage() {
 
     const id = parseInt(recordId, 10);
     if (!recordId.trim() || isNaN(id) || id <= 0) {
-      setError("Enter a valid numeric ID greater than 0");
+      setError(`Enter a valid ${selected.idLabel}`);
       return;
     }
 
@@ -107,17 +133,17 @@ export default function QueryPage() {
   }
 
   return (
-    <div>
+    <div className="page">
       <header className="page-header">
-        <h1 className="cosmic-title">Stellar Query</h1>
-        <p>Look up any product, customer, or order by ID across the cosmos</p>
+        <h1>Query</h1>
+        <p>Look up records by auto-generated Product ID, Customer ID, or Order ID</p>
       </header>
 
-      <div className="card card-glow query-card">
+      <div className="card query-card">
         <form onSubmit={handleSearch} className="query-form">
           <div className="query-form-row">
             <div className="form-row">
-              <label htmlFor="entity">Entity type</label>
+              <label htmlFor="entity">Record type</label>
               <select
                 id="entity"
                 value={entity}
@@ -135,19 +161,21 @@ export default function QueryPage() {
               </select>
             </div>
             <div className="form-row">
-              <label htmlFor="record-id">Record ID</label>
+              <label htmlFor="record-id">{selected.idLabel}</label>
               <input
                 id="record-id"
                 type="number"
                 min="1"
                 inputMode="numeric"
-                placeholder="e.g. 42"
+                placeholder={selected.placeholder}
                 value={recordId}
                 onChange={(e) => setRecordId(e.target.value)}
               />
+              <span className="field-hint">{selected.hint}</span>
             </div>
             <button type="submit" className="btn btn-primary btn-query" disabled={searching}>
-              {searching ? "Scanning…" : "Query"}
+              <Search size={18} />
+              {searching ? "Searching…" : "Search"}
             </button>
           </div>
           {error && <p className="form-error query-error">{error}</p>}
@@ -155,34 +183,25 @@ export default function QueryPage() {
       </div>
 
       {result && (
-        <div className="card card-glow query-result-card">
+        <div className="card query-result-card">
           <div className="query-result-header">
-            <span className="entity-badge">{result.entity}</span>
-            <h2>ID {result.id}</h2>
+            <IdBadge
+              label={
+                result.entity === "product"
+                  ? "Product ID"
+                  : result.entity === "customer"
+                    ? "Customer ID"
+                    : "Order ID"
+              }
+              id={result.id}
+            />
+            <span className="entity-pill">{result.entity}</span>
           </div>
           {result.entity === "product" && <ProductResult data={result.data} />}
           {result.entity === "customer" && <CustomerResult data={result.data} />}
           {result.entity === "order" && <OrderResult data={result.data} />}
         </div>
       )}
-
-      <div className="card query-hints">
-        <h3>API quick reference</h3>
-        <ul className="hint-list">
-          <li>
-            <code>GET /query?entity=product&amp;id=1</code>
-          </li>
-          <li>
-            <code>GET /products?id=1</code>
-          </li>
-          <li>
-            <code>GET /customers?id=1</code>
-          </li>
-          <li>
-            <code>GET /orders?id=1</code>
-          </li>
-        </ul>
-      </div>
     </div>
   );
 }

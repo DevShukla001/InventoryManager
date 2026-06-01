@@ -1,5 +1,7 @@
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import EmptyState from "../components/EmptyState";
+import IdBadge from "../components/IdBadge";
 import Modal from "../components/Modal";
 import PageActions from "../components/PageActions";
 import { api } from "../api";
@@ -94,22 +96,22 @@ export default function ProductsPage() {
   return (
     <div className="page">
       <header className="page-header">
-        <h1 className="cosmic-title">Products</h1>
-        <p>Manage catalog and inventory levels</p>
+        <h1>Products</h1>
+        <p>Each product gets an auto-generated Product ID for lookup in Query</p>
       </header>
 
       <PageActions
         count={products.length}
         countLabel="product(s)"
-        primaryLabel="+ Add Product"
+        primaryLabel="Add Product"
         onPrimary={openCreate}
       />
 
       <button type="button" className="fab" onClick={openCreate} aria-label="Add product">
-        +
+        <Plus size={24} />
       </button>
 
-      <div className="card card-glow">
+      <div className="card">
         {products.length === 0 ? (
           <EmptyState
             message="No products yet."
@@ -122,7 +124,10 @@ export default function ProductsPage() {
               {products.map((p) => (
                 <article key={p.id} className="list-card">
                   <div className="list-card-head">
-                    <strong>{p.name}</strong>
+                    <div>
+                      <IdBadge label="Product ID" id={p.id} />
+                      <strong style={{ display: "block", marginTop: "0.5rem" }}>{p.name}</strong>
+                    </div>
                     <span
                       className={`badge ${p.quantity_in_stock <= 10 ? "badge-warning" : "badge-ok"}`}
                     >
@@ -138,21 +143,21 @@ export default function ProductsPage() {
                       className="btn btn-secondary btn-sm"
                       onClick={() => setViewProduct(p)}
                     >
-                      View
+                      <Eye size={14} /> View
                     </button>
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
                       onClick={() => openEdit(p)}
                     >
-                      Edit
+                      <Pencil size={14} /> Edit
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(p.id)}
                     >
-                      Delete
+                      <Trash2 size={14} /> Delete
                     </button>
                   </div>
                 </article>
@@ -163,6 +168,7 @@ export default function ProductsPage() {
               <table>
                 <thead>
                   <tr>
+                    <th>Product ID</th>
                     <th>Name</th>
                     <th>SKU</th>
                     <th>Price</th>
@@ -173,6 +179,9 @@ export default function ProductsPage() {
                 <tbody>
                   {products.map((p) => (
                     <tr key={p.id}>
+                      <td>
+                        <IdBadge label="ID" id={p.id} />
+                      </td>
                       <td>{p.name}</td>
                       <td>{p.sku}</td>
                       <td>${Number(p.price).toFixed(2)}</td>
@@ -189,21 +198,21 @@ export default function ProductsPage() {
                           className="btn btn-secondary btn-sm"
                           onClick={() => setViewProduct(p)}
                         >
-                          View
+                          <Eye size={14} /> View
                         </button>
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
                           onClick={() => openEdit(p)}
                         >
-                          Edit
+                          <Pencil size={14} /> Edit
                         </button>
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
                           onClick={() => handleDelete(p.id)}
                         >
-                          Delete
+                          <Trash2 size={14} /> Delete
                         </button>
                       </td>
                     </tr>
@@ -219,7 +228,7 @@ export default function ProductsPage() {
         <Modal title="Product details" onClose={() => setViewProduct(null)}>
           <div className="view-details">
             <p>
-              <strong>ID:</strong> {viewProduct.id}
+              <strong>Product ID:</strong> {viewProduct.id}
             </p>
             <p>
               <strong>Name:</strong> {viewProduct.name}

@@ -1,5 +1,7 @@
+import { Eye, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import EmptyState from "../components/EmptyState";
+import IdBadge from "../components/IdBadge";
 import Modal from "../components/Modal";
 import PageActions from "../components/PageActions";
 import { api } from "../api";
@@ -99,22 +101,22 @@ export default function OrdersPage() {
   return (
     <div className="page">
       <header className="page-header">
-        <h1 className="cosmic-title">Orders</h1>
-        <p>Create and track customer orders</p>
+        <h1>Orders</h1>
+        <p>Each order gets an auto-generated Order ID; line items reference Product ID</p>
       </header>
 
       <PageActions
         count={orders.length}
         countLabel="order(s)"
-        primaryLabel="+ Create Order"
+        primaryLabel="Create Order"
         onPrimary={openCreate}
       />
 
       <button type="button" className="fab" onClick={openCreate} aria-label="Create order">
-        +
+        <Plus size={24} />
       </button>
 
-      <div className="card card-glow">
+      <div className="card">
         {orders.length === 0 ? (
           <EmptyState
             message="No orders yet. Add products and customers first, then create an order."
@@ -127,7 +129,7 @@ export default function OrdersPage() {
               {orders.map((o) => (
                 <article key={o.id} className="list-card">
                   <div className="list-card-head">
-                    <strong>Order #{o.id}</strong>
+                    <IdBadge label="Order ID" id={o.id} />
                     <span className="badge badge-ok">${Number(o.total_amount).toFixed(2)}</span>
                   </div>
                   <p className="list-card-meta">{o.customer_name}</p>
@@ -138,14 +140,14 @@ export default function OrdersPage() {
                       className="btn btn-secondary btn-sm"
                       onClick={() => setDetailOrder(o)}
                     >
-                      View details
+                      <Eye size={14} /> View
                     </button>
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
                       onClick={() => handleCancel(o.id)}
                     >
-                      Cancel
+                      <Trash2 size={14} /> Cancel
                     </button>
                   </div>
                 </article>
@@ -156,7 +158,7 @@ export default function OrdersPage() {
               <table>
                 <thead>
                   <tr>
-                    <th>ID</th>
+                    <th>Order ID</th>
                     <th>Customer</th>
                     <th>Total</th>
                     <th>Date</th>
@@ -166,7 +168,9 @@ export default function OrdersPage() {
                 <tbody>
                   {orders.map((o) => (
                     <tr key={o.id}>
-                      <td>#{o.id}</td>
+                      <td>
+                        <IdBadge label="ID" id={o.id} />
+                      </td>
                       <td>{o.customer_name}</td>
                       <td>${Number(o.total_amount).toFixed(2)}</td>
                       <td>{new Date(o.created_at).toLocaleString()}</td>
@@ -176,14 +180,14 @@ export default function OrdersPage() {
                           className="btn btn-secondary btn-sm"
                           onClick={() => setDetailOrder(o)}
                         >
-                          View
+                          <Eye size={14} /> View
                         </button>
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
                           onClick={() => handleCancel(o.id)}
                         >
-                          Cancel
+                          <Trash2 size={14} /> Cancel
                         </button>
                       </td>
                     </tr>
@@ -275,7 +279,13 @@ export default function OrdersPage() {
       )}
 
       {detailOrder && (
-        <Modal title={`Order #${detailOrder.id}`} onClose={() => setDetailOrder(null)}>
+        <Modal title="Order details" onClose={() => setDetailOrder(null)}>
+          <p>
+            <strong>Order ID:</strong> {detailOrder.id}
+          </p>
+          <p>
+            <strong>Customer ID:</strong> {detailOrder.customer_id}
+          </p>
           <p>
             <strong>Customer:</strong> {detailOrder.customer_name}
           </p>
@@ -289,6 +299,7 @@ export default function OrdersPage() {
             <table>
               <thead>
                 <tr>
+                  <th>Product ID</th>
                   <th>Product</th>
                   <th>Qty</th>
                   <th>Unit Price</th>
@@ -298,6 +309,9 @@ export default function OrdersPage() {
               <tbody>
                 {detailOrder.items.map((item) => (
                   <tr key={item.id}>
+                    <td>
+                      <IdBadge label="ID" id={item.product_id} />
+                    </td>
                     <td>{item.product_name}</td>
                     <td>{item.quantity}</td>
                     <td>${Number(item.unit_price).toFixed(2)}</td>

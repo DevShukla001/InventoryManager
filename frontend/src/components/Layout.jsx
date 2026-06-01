@@ -1,15 +1,7 @@
+import { Menu, Package, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import ApiBanner from "./ApiBanner";
-import CosmicBackground from "./CosmicBackground";
-
-const navItems = [
-  { to: "/", label: "Dashboard", icon: "◈", end: true },
-  { to: "/query", label: "Query", icon: "◎" },
-  { to: "/products", label: "Products", icon: "▣" },
-  { to: "/customers", label: "Customers", icon: "◉" },
-  { to: "/orders", label: "Orders", icon: "⬡" },
-];
+import { navItems } from "../config/navigation";
 
 export default function Layout({ children, toast }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,21 +20,20 @@ export default function Layout({ children, toast }) {
 
   return (
     <div className="app-shell">
-      <CosmicBackground />
-
       <header className="mobile-header">
         <button
           type="button"
-          className="menu-toggle"
+          className="icon-btn menu-toggle"
           onClick={() => setMenuOpen((o) => !o)}
           aria-expanded={menuOpen}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
         >
-          <span className="menu-bar" />
-          <span className="menu-bar" />
-          <span className="menu-bar" />
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-        <span className="mobile-brand">InventoryOS</span>
+        <div className="mobile-brand">
+          <Package size={20} className="brand-icon" />
+          <span>InventoryOS</span>
+        </div>
       </header>
 
       {menuOpen && (
@@ -56,45 +47,49 @@ export default function Layout({ children, toast }) {
 
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-brand">
-          <span className="brand-glow">InventoryOS</span>
-          <span className="brand-tagline">Cosmic Commerce</span>
+          <div className="brand-mark">
+            <Package size={22} strokeWidth={2.25} />
+          </div>
+          <div>
+            <span className="brand-name">InventoryOS</span>
+            <span className="brand-tagline">Order Management</span>
+          </div>
         </div>
-        <nav>
-          {navItems.map((item) => (
+        <nav className="sidebar-nav">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              >
+                <Icon size={18} strokeWidth={2} aria-hidden="true" />
+                {item.label}
+              </NavLink>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <main className="main-content">{children}</main>
+
+      <nav className="bottom-nav" aria-label="Mobile navigation">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              className={({ isActive }) => (isActive ? "bottom-nav-link active" : "bottom-nav-link")}
             >
-              <span className="nav-icon" aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.label}
+              <Icon size={20} strokeWidth={2} aria-hidden="true" />
+              <span className="bottom-nav-label">{item.label}</span>
             </NavLink>
-          ))}
-        </nav>
-      </aside>
-
-      <main className="main-content">
-        <ApiBanner />
-        {children}
-      </main>
-
-      <nav className="bottom-nav" aria-label="Mobile navigation">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) => (isActive ? "bottom-nav-link active" : "bottom-nav-link")}
-          >
-            <span className="nav-icon" aria-hidden="true">
-              {item.icon}
-            </span>
-            <span className="bottom-nav-label">{item.label}</span>
-          </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       {toast && (
